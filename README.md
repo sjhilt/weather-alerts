@@ -75,9 +75,9 @@ File Structure
 
 
 Notes
-•	The application polls for new alerts every 5 minutes
-•	If no alerts are active, the “Test Alert” button will announce the current weather
-•	Alerts are only announced once and tracked using their ID
-•	Sonos and Chromecast devices are auto-discovered each time the page loads
+- The application polls for new alerts every 5 minutes
+- If no alerts are active, the “Test Alert” button will announce the current weather
+- Alerts are only announced once and tracked using their ID
+- Sonos and Chromecast devices are auto-discovered each time the page loads
 
 
