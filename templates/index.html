@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Alert Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container py-4">
+    <h1>Weather Alert Dashboard</h1>
+
+    <form method="POST" action="/update" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label for="zone" class="form-label">NWS Zone ID</label>
+            <input type="text" class="form-control" id="zone" name="zone" value="{{ zone }}">
+        </div>
+
+        <div class="col-md-3">
+            <label for="speaker" class="form-label">Speaker</label>
+            <select class="form-select" id="speaker" name="speaker">
+                {% for device in device_list %}
+                <option value="{{ device.name }}" {% if device.name == selected_speaker %}selected{% endif %}>
+                    {{ device.name }} ({{ device.type }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label for="device_type" class="form-label">Device Type</label>
+            <select class="form-select" id="device_type" name="device_type">
+                <option value="sonos" {% if selected_device_type == 'sonos' %}selected{% endif %}>Sonos</option>
+                <option value="cast" {% if selected_device_type == 'cast' %}selected{% endif %}>Chromecast</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label for="unit" class="form-label">Temperature Unit</label>
+            <select class="form-select" id="unit" name="unit">
+                <option value="C" {% if unit == "C" %}selected{% endif %}>Celsius</option>
+                <option value="F" {% if unit == "F" %}selected{% endif %}>Fahrenheit</option>
+            </select>
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <a href="/test" class="btn btn-warning">Test Alert</a>
+        </div>
+    </form>
+
+    <h2>Current Weather</h2>
+    {% if weather %}
+        <ul class="list-group mb-4">
+            <li class="list-group-item"><strong>Condition:</strong> {{ weather.text }}</li>
+            <li class="list-group-item">
+                <strong>Temperature:</strong>
+                {% if weather.temperature is not none %}
+                    {% if unit == 'F' %}
+                        {{ ((weather.temperature * 9 / 5) + 32) | round }} °F
+                    {% else %}
+                        {{ weather.temperature | round }} °C
+                    {% endif %}
+                {% else %}
+                    Unknown
+                {% endif %}
+            </li>
+            <li class="list-group-item">
+                <strong>Humidity:</strong>
+                {% if weather.humidity is not none %}
+                    {{ weather.humidity | round }}%
+                {% else %}
+                    Unknown
+                {% endif %}
+            </li>
+            <li class="list-group-item">
+                <strong>Wind:</strong>
+                {% if weather.windSpeed is not none %}
+                    {% if unit == 'F' %}
+                        {{ (weather.windSpeed * 0.621371) | round }} mph
+                    {% else %}
+                        {{ weather.windSpeed | round }} km/h
+                    {% endif %}
+                    at {{ weather.windDirection | default("unknown") }}°
+                {% else %}
+                    Unknown
+                {% endif %}
+            </li>
+            <li class="list-group-item">
+                <small>Last updated: {{ weather.timestamp }}</small>
+            </li>
+        </ul>
+    {% else %}
+        <p>No weather data available.</p>
+    {% endif %}
+
+    <h2>Active Alerts</h2>
+    {% if alerts %}
+        <ul class="list-group">
+            {% for alert in alerts %}
+            <li class="list-group-item">
+                <strong>{{ alert.properties.headline }}</strong><br>
+                <small>{{ alert.properties.sent }}</small><br>
+                <p>{{ alert.properties.description }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No active alerts.</p>
+    {% endif %}
+</body>
+</html>
