@@ -1,0 +1,5 @@
+flask
+gtts
+soco
+pychromecast
+requests
