@@ -17,6 +17,7 @@ DEFAULT_USER_AGENT = "you@youremail.com"
 AUDIO_PORT = 8000
 CHECK_INTERVAL = 300  # Poll every 5 minutes
 WEATHER_STATION_ID = "KCHA"
+HARDCODED_SONOS_IP = None  # <-- Replace with your speaker's IP or set to None
 # ==========================
 
 app = Flask(__name__)
@@ -81,8 +82,17 @@ def save_seen_ids(ids):
 def get_all_audio_devices():
     devices = []
     try:
-        sonos_speakers = soco.discover()
-        for s in sonos_speakers or []:
+        sonos_speakers = soco.discover() or set()
+
+        if HARDCODED_SONOS_IP:
+            try:
+                hardcoded = soco.SoCo(HARDCODED_SONOS_IP)
+                if all(s.ip_address != HARDCODED_SONOS_IP for s in sonos_speakers):
+                    sonos_speakers.add(hardcoded)
+            except Exception as e:
+                print(f"Failed to load hardcoded Sonos speaker: {e}")
+
+        for s in sonos_speakers:
             devices.append({"name": s.player_name, "ip": s.ip_address, "type": "sonos"})
     except Exception as e:
         print(f"Sonos discovery failed: {e}")
@@ -109,8 +119,16 @@ def play_alert_on_device(text, name, device_type):
     url = f"http://{get_local_ip()}:{AUDIO_PORT}/alert.mp3"
 
     if device_type == "sonos":
-        speakers = soco.discover()
-        for s in speakers or []:
+        speakers = soco.discover() or set()
+
+        if HARDCODED_SONOS_IP:
+            try:
+                hardcoded = soco.SoCo(HARDCODED_SONOS_IP)
+                speakers.add(hardcoded)
+            except Exception as e:
+                print(f"Could not use hardcoded Sonos IP: {e}")
+
+        for s in speakers:
             if s.player_name and s.player_name.lower() == name.lower():
                 try:
                     original_volume = s.volume
